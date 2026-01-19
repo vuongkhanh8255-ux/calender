@@ -15,22 +15,25 @@ const ScratchPad = () => {
   };
 
   return (
-    <div className="bg-[#fefce8] border-2 border-yellow-200 rounded-3xl p-5 h-full flex flex-col shadow-xl shadow-yellow-500/10 relative overflow-hidden">
-      {/* Trang trí background */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-300 opacity-20 rounded-bl-full pointer-events-none"></div>
-
-      <div className="flex items-center gap-2 mb-4 relative z-10">
-        <span className="bg-yellow-200 text-yellow-700 p-2 rounded-lg"><PenTool size={24} /></span>
-        <h3 className="text-yellow-800 font-black text-xl">GHI CHÚ NHANH</h3>
+    <div className="glass-panel p-5 h-full flex flex-col relative overflow-hidden group hover:shadow-yellow-500/10 transition-all">
+      <div className="flex items-center gap-3 mb-3 relative z-10">
+        <div className="bg-amber-100 p-2 rounded-xl text-amber-600 shadow-sm"><PenTool size={20} /></div>
+        <h3 className="text-slate-800 font-bold text-lg">Quick Notes</h3>
       </div>
-      
-      <textarea
-        className="flex-1 w-full bg-transparent resize-none outline-none text-gray-700 text-base leading-7 placeholder-yellow-800/30 font-medium"
-        style={{ backgroundImage: 'linear-gradient(transparent 95%, #eab30820 95%)', backgroundSize: '100% 2rem', lineHeight: '2rem' }}
-        placeholder="Viết idea, số điện thoại, nháp content..."
-        value={note}
-        onChange={handleChange}
-      />
+
+      <div className="flex-1 relative">
+        <textarea
+          className="w-full h-full bg-transparent resize-none outline-none text-slate-600 text-sm leading-7 placeholder:text-slate-300 font-medium custom-scrollbar"
+          style={{
+            backgroundImage: 'linear-gradient(transparent 96%, #f1f5f9 96%)',
+            backgroundSize: '100% 1.75rem',
+            lineHeight: '1.75rem'
+          }}
+          placeholder="Type your ideas, reminders..."
+          value={note}
+          onChange={handleChange}
+        />
+      </div>
     </div>
   );
 };

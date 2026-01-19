@@ -1,26 +1,156 @@
-/* Ép dark mode cho lịch */
+/* Glassmorphism for React Big Calendar */
 .rbc-calendar {
-    color: #e5e7eb; /* Màu chữ sáng */
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Inter', sans-serif !important;
+    color: #334155;
+    /* slate-700 */
+}
+
+/* Toolbar */
+.rbc-toolbar {
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.rbc-toolbar button {
+    color: #64748b;
+    /* slate-500 */
+    border: 1px solid #e2e8f0;
+    /* slate-200 */
+    background-color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    padding: 6px 12px;
+}
+
+.rbc-toolbar button:hover {
+    background-color: #f1f5f9;
+    /* slate-100 */
+    color: #334155;
+}
+
+.rbc-toolbar button.rbc-active,
+.rbc-toolbar button.rbc-active:hover {
+    background-color: #3b82f6;
+    /* blue-500 */
+    border-color: #3b82f6;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+}
+
+.rbc-toolbar-label {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #1e293b;
+    /* slate-800 */
+}
+
+/* Month View */
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+    border: 1px solid #e2e8f0;
+    /* slate-200 */
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+}
+
+.rbc-header {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 12px 0;
+    font-weight: 600;
+    color: #64748b;
+    /* slate-500 */
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.rbc-day-bg+.rbc-day-bg {
+    border-left: 1px solid #f1f5f9;
+    /* Very subtle borders */
+}
+
+.rbc-month-row+.rbc-month-row {
+    border-top: 1px solid #f1f5f9;
+}
+
+/* Cells */
+.rbc-day-bg.rbc-today {
+    background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+.rbc-now {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.rbc-date-cell {
+    padding: 8px;
+    font-size: 0.9rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.rbc-off-range-bg {
+    background-color: rgba(241, 245, 249, 0.5);
+    /* slate-100/50 */
+}
+
+/* Events */
+.rbc-event {
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border: none !important;
+    font-weight: 500;
+}
+
+.rbc-event-content {
+    font-size: 0.8rem;
+}
+
+.rbc-show-more {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.8rem;
+    background-color: transparent;
+}
+
+.rbc-show-more:hover {
+    color: #3b82f6;
+    text-decoration: none;
 }
 
 /* Thanh header (Tháng, nút bấm) */
 .rbc-toolbar {
     margin-bottom: 15px;
 }
+
 .rbc-toolbar button {
     color: #d1d5db;
     border: 1px solid #4b5563;
-    background-color: #1f2937; /* Nút tối */
+    background-color: #1f2937;
+    /* Nút tối */
     font-weight: 600;
     border-radius: 6px;
 }
-.rbc-toolbar button:hover, .rbc-toolbar button:active, .rbc-toolbar button.rbc-active {
-    background-color: #374151 !important; /* Hover nút */
+
+.rbc-toolbar button:hover,
+.rbc-toolbar button:active,
+.rbc-toolbar button.rbc-active {
+    background-color: #374151 !important;
+    /* Hover nút */
     border-color: #6b7280;
     color: white;
     box-shadow: none !important;
 }
+
 .rbc-toolbar-label {
     font-weight: 800;
     font-size: 1.2rem;
@@ -28,12 +158,17 @@
 }
 
 /* Lưới lịch */
-.rbc-month-view, .rbc-time-view, .rbc-agenda-view {
-    border: 1px solid #374151; /* Viền tối */
-    background-color: #111827; /* Nền rất tối */
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+    border: 1px solid #374151;
+    /* Viền tối */
+    background-color: #111827;
+    /* Nền rất tối */
     border-radius: 8px;
     overflow: hidden;
 }
+
 .rbc-header {
     border-bottom: 1px solid #374151;
     padding: 10px 0;
@@ -42,35 +177,46 @@
     text-transform: uppercase;
     font-size: 0.8rem;
 }
-.rbc-day-bg + .rbc-day-bg {
-    border-left: 1px solid #374151; /* Đường kẻ dọc */
+
+.rbc-day-bg+.rbc-day-bg {
+    border-left: 1px solid #374151;
+    /* Đường kẻ dọc */
 }
-.rbc-month-row + .rbc-month-row {
-    border-top: 1px solid #374151; /* Đường kẻ ngang */
+
+.rbc-month-row+.rbc-month-row {
+    border-top: 1px solid #374151;
+    /* Đường kẻ ngang */
 }
 
 /* Ô ngày hôm nay */
 .rbc-day-bg.rbc-today {
-    background-color: rgba(59, 130, 246, 0.1) !important; /* Xanh dương rất nhạt */
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    /* Xanh dương rất nhạt */
 }
+
 .rbc-now {
     font-weight: bold;
-    color: #60a5fa; /* Số ngày hôm nay màu xanh */
+    color: #60a5fa;
+    /* Số ngày hôm nay màu xanh */
 }
+
 .rbc-date-cell {
     padding: 8px;
     font-size: 0.9rem;
     color: #d1d5db;
 }
+
 .rbc-off-range-bg {
-    background-color: #0f172a; /* Ngày tháng khác tối hơn */
+    background-color: #0f172a;
+    /* Ngày tháng khác tối hơn */
 }
 
 /* Sự kiện (Event) */
 .rbc-event {
     padding: 2px 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
 /* Ẩn mấy cái label "x more" */
 .rbc-show-more {
     color: #9ca3af;
