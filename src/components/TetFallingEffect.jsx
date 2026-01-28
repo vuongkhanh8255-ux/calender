@@ -9,16 +9,16 @@ const TetFallingEffect = () => {
   useEffect(() => {
     // Tạo ra 50 món đồ ngẫu nhiên
     const newItems = Array.from({ length: 50 }).map((_, i) => {
-        const content = TET_ITEMS[Math.floor(Math.random() * TET_ITEMS.length)];
-        
-        const style = {
-            left: `${Math.random() * 100}vw`,
-            animationDuration: `${Math.random() * 10 + 10}s`,
-            animationDelay: `-${Math.random() * 10}s`,
-            fontSize: `${Math.random() * 20 + 20}px`,
-            opacity: Math.random() * 0.5 + 0.3,
-        };
-        return { id: i, content, style };
+      const content = TET_ITEMS[Math.floor(Math.random() * TET_ITEMS.length)];
+
+      const style = {
+        left: `${Math.random() * 100}vw`,
+        animationDuration: `${Math.random() * 10 + 10}s`,
+        animationDelay: `-${Math.random() * 10}s`,
+        fontSize: `${Math.random() * 20 + 20}px`,
+        opacity: Math.random() * 0.5 + 0.3,
+      };
+      return { id: i, content, style };
     });
     setItems(newItems);
   }, []);

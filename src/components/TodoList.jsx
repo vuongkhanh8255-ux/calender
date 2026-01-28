@@ -1,146 +1,170 @@
-import React, { useState } from 'react';
-import { CheckSquare, Plus, Trash2, Calendar, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { SquareCheckBig, Plus, Trash2, Check, RefreshCw } from 'lucide-react';
+import moment from 'moment';
 
-// Thêm prop onMoveOldTasks
-const TodoList = ({ tasks, onToggle, onAdd, onDelete, onMoveOldTasks }) => {
-  const [newItem, setNewItem] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+const TodoList = ({ tasks, categories, onToggle, onAdd, onDelete }) => {
+  const [newTask, setNewTask] = useState('');
+  const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
 
-  // --- HÀM XỬ LÝ CHUNG CHO NÚT ENTER VÀ NÚT CLICK ---
-  const handleAdd = () => {
-    if (newItem.trim() !== '') {
-      onAdd(newItem, selectedDate);
-      setNewItem('');
+  // Set default category when categories load
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategoryId) {
+      setSelectedCategoryId(categories[0].id);
     }
+  }, [categories, selectedCategoryId]);
+
+  // Lọc task theo ngày đang chọn và sắp xếp theo trạng thái (chưa làm lên đầu)
+  // Sử dụng task_date cho timeline_tasks
+  const tasksForDay = tasks
+    .filter(t => moment(t.task_date).isSame(selectedDate, 'day'))
+    .sort((a, b) => {
+      // Đưa task đã xong xuống dưới
+      if (a.status === 'done' && b.status !== 'done') return 1;
+      if (a.status !== 'done' && b.status === 'done') return -1;
+      return 0;
+    });
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (!newTask.trim()) return;
+    if (!selectedCategoryId) {
+      alert("Vui lòng chọn đầu mục trước!");
+      return;
+    }
+
+    // Tìm category để lấy màu mặc định (nếu cần)
+    const category = categories.find(c => c.id === selectedCategoryId);
+
+    // Gọi hàm thêm task từ App.jsx
+    onAdd({
+      title: newTask,
+      category_id: selectedCategoryId,
+      task_date: selectedDate,
+      color: category?.color || '#ea580c',
+      status: 'todo'
+    });
+    setNewTask('');
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleAdd();
-    }
-  };
-
-  // --- LỌC CÔNG VIỆC THEO NGÀY ĐANG CHỌN ---
-  const filteredTasks = tasks ? tasks.filter(task => {
-    if (!task.start_time) return false;
-    const taskDate = task.start_time.split('T')[0];
-    return taskDate === selectedDate;
-  }) : [];
-
-  // --- TÍNH NĂNG MỚI: ĐẾM VIỆC CŨ (QUÁ KHỨ) CHƯA LÀM ---
-  // Tìm task có ngày < selectedDate VÀ status là 'todo'
-  const overdueTasksCount = tasks ? tasks.filter(task => {
-    if (!task.start_time || task.status === 'done' || task.category === 'Schedule') return false;
-    const taskDate = task.start_time.split('T')[0];
-    return taskDate < selectedDate; // Chỉ đếm việc cũ hơn ngày đang chọn
-  }).length : 0;
-
-  // Sắp xếp
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
-    if (a.status === b.status) return 0;
-    return a.status === 'todo' ? -1 : 1;
-  });
-
-  const todosCount = filteredTasks.filter(t => t.status === 'todo').length;
+  const isToday = moment(selectedDate).isSame(moment(), 'day');
 
   return (
-    <div className="glass-panel p-6 w-full h-full max-h-full flex flex-col relative overflow-hidden">
+    <div className="glass-panel rounded-3xl p-6 h-full flex flex-col relative overflow-hidden group border border-white/60 shadow-xl">
+      {/* Decorative */}
+      <div className="absolute -top-10 -right-10 w-40 h-40 bg-orange-200/50 rounded-full blur-3xl group-hover:bg-orange-300/50 transition-all duration-700"></div>
 
-      {/* HEADER + DATE PICKER */}
-      <div className="flex justify-between items-center mb-6 shrink-0 gap-4">
-        <h3 className="text-slate-800 font-bold text-2xl flex items-center gap-3">
-          <div className="bg-blue-100 p-2.5 rounded-xl text-blue-600 shadow-sm"><CheckSquare size={24} /></div>
-          Tasks
-        </h3>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 relative z-10">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-orange-100 text-orange-600 rounded-xl shadow-sm">
+            <SquareCheckBig size={24} className="stroke-[2.5px]" />
+          </div>
+          <h3 className="text-slate-800 font-extrabold text-xl tracking-tight uppercase">TO DO LIST</h3>
+        </div>
 
-        <div className="flex items-center gap-3 flex-1 justify-end">
-          <div className="relative group/date">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-white/80 rounded-xl border border-white/60 px-4 py-2 shadow-sm backdrop-blur-sm">
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-400 hover:bg-white transition-all shadow-sm"
+              className="bg-transparent text-base font-bold text-slate-700 outline-none cursor-pointer"
             />
-            <Calendar className="absolute left-3 top-2.5 text-slate-400 group-hover/date:text-blue-500 transition-colors pointer-events-none" size={16} />
+            <div className="h-5 w-[1.5px] bg-slate-300 mx-3"></div>
+            <span className="text-orange-600 text-sm font-black bg-orange-100/50 px-2.5 py-1 rounded-lg">
+              {tasksForDay.length}
+            </span>
           </div>
-          <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shrink-0 shadow-md shadow-blue-500/20">
-            {todosCount} Left
-          </span>
         </div>
       </div>
 
-      {/* --- NÚT DỜI VIỆC CŨ --- */}
-      {overdueTasksCount > 0 && (
-        <div className="mb-4 shrink-0 relative z-20">
-          <button
-            onClick={() => onMoveOldTasks(selectedDate)}
-            className="w-full flex items-center justify-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-3 rounded-xl text-sm font-bold transition-all border border-orange-200 group/alert cursor-pointer active:scale-95 shadow-sm"
-          >
-            <RotateCcw size={16} className="group-hover/alert:-rotate-180 transition-transform duration-500" />
-            <span>{overdueTasksCount} unfinished tasks from previous days. <span className="underline">Move to this day?</span></span>
-          </button>
-        </div>
-      )}
-
-      {/* DANH SÁCH */}
-      <div className="flex-1 overflow-y-auto min-h-0 pr-2 space-y-3 custom-scrollbar">
-        {sortedTasks.map(task => (
-          <div
-            key={task.id}
-            onClick={() => onToggle(task.id, task.status)}
-            className={`group flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer relative ${task.status === 'done'
-              ? 'bg-gray-100 border-gray-100 opacity-60'
-              : 'bg-white/80 hover:bg-orange-50 border-gray-100 hover:border-orange-200'
-              }`}
-          >
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${task.status === 'done' ? 'bg-orange-500 border-orange-500' : 'border-gray-300 bg-white'}`}>
-              {task.status === 'done' && <div className="w-2 h-2 bg-white rounded-full"></div>}
-            </div>
-
-            <span className={`font-semibold flex-1 break-words text-sm ${task.status === 'done' ? 'text-gray-400 line-through' : 'text-gray-700 group-hover:text-orange-700'}`}>
-              {task.title}
-            </span>
-
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete(task.id);
-              }}
-              className="p-2 text-red-400 bg-red-50 hover:bg-red-500 hover:text-white rounded-lg transition-all shrink-0 relative z-20 hover:shadow-md cursor-pointer"
-              title="Xóa ngay"
+      {/* List */}
+      <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar mb-4">
+        {tasksForDay.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-3 opacity-60">
+            <div className="p-5 bg-slate-100 rounded-full"><SquareCheckBig size={40} /></div>
+            <p className="text-base font-semibold">Chưa có nhiệm vụ nào...</p>
+          </div>
+        ) : (
+          tasksForDay.map((task) => (
+            <div
+              key={task.id}
+              className={`group/item flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300
+                ${task.status === 'done'
+                  ? 'bg-slate-50/60 border-slate-100 opacity-70'
+                  : 'bg-white/70 border-white/60 hover:border-orange-300 hover:bg-white hover:shadow-lg hover:shadow-orange-500/10 hover:-translate-y-0.5'
+                }`}
             >
-              <Trash2 size={18} />
-            </button>
-          </div>
-        ))}
+              <button
+                onClick={() => onToggle(task.id, task.status)}
+                className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 shrink-0
+                  ${task.status === 'done'
+                    ? 'bg-green-500 border-green-500 text-white scale-110'
+                    : 'border-orange-300 text-transparent hover:border-orange-500'
+                  }`}
+              >
+                <Check size={14} strokeWidth={4} />
+              </button>
 
-        {filteredTasks.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-gray-300 opacity-60 text-center px-4">
-            <p>Ngày {new Date(selectedDate).toLocaleDateString('vi-VN')} chưa có việc gì.</p>
-            <p className="text-sm mt-1">Nhập ở dưới để thêm vào lịch luôn!</p>
-          </div>
+              <div className="flex-1 min-w-0">
+                <span className={`block font-semibold text-lg truncate transition-all ${task.status === 'done' ? 'text-slate-500 line-through decoration-2 decoration-slate-300' : 'text-slate-800'}`}>
+                  {task.title}
+                </span>
+                {/* Hiển thị tên category nhỏ bên dưới */}
+                {task.category_id && categories.find(c => c.id === task.category_id) && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full mt-1 inline-block"
+                    style={{
+                      backgroundColor: `${categories.find(c => c.id === task.category_id)?.color}20`,
+                      color: categories.find(c => c.id === task.category_id)?.color
+                    }}>
+                    {categories.find(c => c.id === task.category_id)?.title}
+                  </span>
+                )}
+              </div>
+
+              <button
+                onClick={() => onDelete(task.id)}
+                className="opacity-0 group-hover/item:opacity-100 p-2.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+              >
+                <Trash2 size={20} />
+              </button>
+            </div>
+          ))
         )}
       </div>
 
-      {/* INPUT */}
-      <div className="mt-4 relative group shrink-0 pt-2 bg-white z-10 border-t border-gray-100">
-        <input
-          type="text"
-          className="w-full bg-gray-100 border-2 border-transparent focus:bg-white focus:border-orange-400 rounded-xl py-3 pl-11 pr-12 text-gray-700 font-medium placeholder-gray-400 outline-none transition-all shadow-inner"
-          placeholder={`Thêm việc ngày ${selectedDate.split('-').reverse().join('/')}...`}
-          value={newItem}
-          onChange={(e) => setNewItem(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        {/* NÚT CỘNG (SỬA LỖI MOBILE): Thay vì chỉ để icon, bọc nó trong div hoặc button có onClick */}
-        <button
-          onClick={handleAdd}
-          className="absolute left-2 top-5 p-1 text-gray-400 hover:text-orange-500 active:scale-90 transition-all cursor-pointer z-20"
-        >
-          <Plus size={24} className="group-focus-within:text-orange-500 transition-colors" />
-        </button>
-      </div>
+      {/* Add Task Input Area */}
+      <form onSubmit={handleAdd} className="mt-auto pt-2 relative z-10">
+        <div className="flex flex-col gap-2">
+          <select
+            value={selectedCategoryId}
+            onChange={(e) => setSelectedCategoryId(e.target.value)}
+            className="w-full px-4 py-2 rounded-xl bg-white/80 border border-white/60 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="" disabled>Chọn đầu mục...</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.title}</option>
+            ))}
+          </select>
+          <div className="relative">
+            <input
+              type="text"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="Thêm nhiệm vụ mới..."
+              className="w-full pl-5 pr-14 py-4 rounded-2xl bg-white/80 border-2 border-white/60 focus:border-orange-300 focus:bg-white outline-none shadow-sm placeholder-slate-400 font-semibold text-slate-700 transition-all backdrop-blur-sm"
+            />
+            <button
+              type="submit"
+              disabled={!newTask.trim() || !selectedCategoryId}
+              className="absolute right-2 top-2 bottom-2 aspect-square bg-orange-500 hover:bg-orange-600 active:scale-95 text-white rounded-xl flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+            >
+              <Plus size={24} />
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
   );
 };

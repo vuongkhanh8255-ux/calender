@@ -8,11 +8,11 @@ import moment from 'moment';
 // Component con: Từng dòng công việc
 const SortableItem = ({ task, onClick }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
-  
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 999 : 1, 
+    zIndex: isDragging ? 999 : 1,
     opacity: isDragging ? 0.8 : 1,
   };
 
@@ -42,19 +42,19 @@ const SortableItem = ({ task, onClick }) => {
 // Component chính: Danh sách ngày
 const SortableDayView = ({ date, events, onOrderChange, onSelectEvent }) => {
   // 1. Lọc việc của ngày hiện tại
-  const dayEvents = events.filter(evt => 
+  const dayEvents = events.filter(evt =>
     moment(evt.start).isSame(date, 'day')
   ).sort((a, b) => (a.position || 0) - (b.position || 0)); // 2. Sắp xếp theo vị trí đã lưu
 
   // Cấu hình cảm biến kéo thả (Kéo 5px mới tính là kéo, để ko nhầm với click)
   const sensors = useSensors(useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 } 
+    activationConstraint: { distance: 5 }
   }));
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (active.id !== over.id) {
-        onOrderChange(active.id, over.id, dayEvents);
+      onOrderChange(active.id, over.id, dayEvents);
     }
   };
 
@@ -63,18 +63,18 @@ const SortableDayView = ({ date, events, onOrderChange, onSelectEvent }) => {
       <h3 className="text-orange-500 font-bold uppercase mb-4 text-center border-b border-slate-700 pb-2 text-sm">
         Danh sách việc ngày {moment(date).format('DD/MM/YYYY')}
       </h3>
-      
+
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={dayEvents.map(t => t.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2 pb-20"> 
+          <div className="space-y-2 pb-20">
             {dayEvents.length > 0 ? (
-                dayEvents.map(task => (
-                    <SortableItem key={task.id} task={task} onClick={onSelectEvent} />
-                ))
+              dayEvents.map(task => (
+                <SortableItem key={task.id} task={task} onClick={onSelectEvent} />
+              ))
             ) : (
-                <div className="text-slate-500 text-center italic mt-10 text-sm">
-                    Trống trơn! Nghỉ ngơi hoặc thêm việc mới đi.
-                </div>
+              <div className="text-slate-500 text-center italic mt-10 text-sm">
+                Trống trơn! Nghỉ ngơi hoặc thêm việc mới đi.
+              </div>
             )}
           </div>
         </SortableContext>
@@ -86,11 +86,11 @@ const SortableDayView = ({ date, events, onOrderChange, onSelectEvent }) => {
 // Cấu hình bắt buộc cho React Big Calendar nhận diện đây là 1 View
 SortableDayView.title = (date) => { return `Chi tiết ngày ${moment(date).format('DD/MM')}`; };
 SortableDayView.navigate = (date, action) => {
-    switch (action) {
-        case 'PREV': return moment(date).subtract(1, 'day').toDate();
-        case 'NEXT': return moment(date).add(1, 'day').toDate();
-        default: return date;
-    }
+  switch (action) {
+    case 'PREV': return moment(date).subtract(1, 'day').toDate();
+    case 'NEXT': return moment(date).add(1, 'day').toDate();
+    default: return date;
+  }
 };
 
 export default SortableDayView;

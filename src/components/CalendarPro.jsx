@@ -5,6 +5,7 @@ import 'moment/locale/vi';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { X, Trash2, Save, Check } from 'lucide-react';
 import SortableDayView from './SortableDayView';
+import WeeklyBoard from './WeeklyBoard';
 
 moment.updateLocale('vi', { week: { dow: 1, doy: 4 } });
 const localizer = momentLocalizer(moment);
@@ -36,16 +37,17 @@ const CalendarPro = ({ tasks, onAdd, onUpdate, onDelete, onReorder }) => {
     return {
       style: {
         backgroundColor: isDone ? '#475569' : event.color,
-        borderRadius: '3px',
+        borderRadius: '8px',
         opacity: isDone ? 0.7 : 1,
         color: 'white',
         border: 'none',
         display: 'block',
-        fontSize: '0.75em', // Chữ nhỏ lại xíu trên mobile
-        fontWeight: '500',
-        marginBottom: '1px',
-        padding: '1px 4px',
-        textDecoration: isDone ? 'line-through' : 'none'
+        fontSize: '0.85em',
+        fontWeight: '600',
+        marginBottom: '2px',
+        padding: '2px 6px',
+        textDecoration: isDone ? 'line-through' : 'none',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }
     };
   };
@@ -87,75 +89,114 @@ const CalendarPro = ({ tasks, onAdd, onUpdate, onDelete, onReorder }) => {
   CustomDayViewWrapper.navigate = SortableDayView.navigate;
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative">
+      <style>{`
+        /* CSS RESPONSIVE CHO LỊCH - LIGHT THEME */
+        .rbc-calendar { font-family: inherit; color: #334155; }
+        .rbc-month-view, .rbc-header { border-color: rgba(0,0,0,0.05) !important; }
+        .rbc-day-bg + .rbc-day-bg { border-left: 1px solid rgba(0,0,0,0.05); }
+        .rbc-today { background-color: rgba(234, 88, 12, 0.05); }
+        .rbc-off-range-bg { background-color: rgba(0,0,0,0.02); }
+        
+        /* Chỉnh thanh công cụ cho Mobile */
+        .rbc-toolbar {
+            flex-direction: column; 
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        @media (min-width: 768px) {
+            .rbc-toolbar { flex-direction: row; gap: 0; }
+        }
+        
+        .rbc-toolbar button { 
+            color: #475569; border: 1px solid #e2e8f0; 
+            font-size: 0.9rem; padding: 8px 16px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(4px);
+            font-weight: 600;
+        }
+        .rbc-toolbar button:hover { background: white; }
+        .rbc-toolbar button.rbc-active { 
+            background-color: #f97316; /* Orange-500 */
+            color: white; border-color: #f97316; 
+            box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3);
+        }
+        .rbc-header { 
+            font-size: 0.85rem; 
+            padding: 14px 0; 
+            font-weight: 800; 
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .rbc-event {
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+            padding: 2px 6px;
+        }
+      `}</style>
+
       <Calendar
         localizer={localizer}
         events={events}
         startAccessor="start" endAccessor="end"
-        style={{ height: '700px' }}
+        style={{ height: '70vh' }}
         view={view} onView={setView}
         date={date} onNavigate={setDate}
-        views={{ month: true, week: true, day: CustomDayViewWrapper }}
+        views={{ month: true, week: WeeklyBoard, day: CustomDayViewWrapper }}
         popup={true}
         eventPropGetter={eventStyleGetter}
         selectable={true}
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
-        className="glass-panel p-6"
       />
 
       {/* --- MODAL RESPONSIVE --- */}
       {modalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/30 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="glass-panel w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 flex justify-between items-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity"></div>
-              <h3 className="text-white font-bold text-xl flex items-center gap-2 relative z-10">
-                {editData.id ? '✏️ Edit Task' : '✨ New Task'}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border border-white/50 animate-in zoom-in-95 duration-200">
+            <div className="bg-gradient-to-r from-orange-400 to-rose-400 p-4 flex justify-between items-center">
+              <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                {editData.id ? '✏️ Chỉnh sửa' : '✨ Tạo mới'}
               </h3>
-              <button onClick={() => setModalOpen(false)} className="text-white/70 hover:text-white transition-colors relative z-10 p-1 hover:bg-white/10 rounded-lg">
-                <X size={24} />
+              <button onClick={() => setModalOpen(false)} className="text-white/80 hover:text-white transition-colors bg-white/10 rounded-full p-1">
+                <X size={20} />
               </button>
             </div>
-
-            <div className="p-6 space-y-6 bg-white/50">
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">What needs to be done?</label>
+            <div className="p-6 space-y-5">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Nội dung công việc</label>
                 <input
                   type="text" autoFocus
                   value={editData.title}
                   onChange={(e) => setEditData({ ...editData, title: e.target.value })}
                   onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-                  className="w-full text-lg font-semibold border-b-2 border-slate-200 focus:border-blue-500 outline-none py-2 text-slate-800 bg-transparent transition-colors placeholder:text-slate-300"
-                  placeholder="e.g. Design meeting..."
+                  className="w-full text-lg font-semibold bg-slate-50 border-2 border-slate-100 focus:border-orange-400 focus:bg-white rounded-xl px-3 py-2 outline-none text-slate-800 transition-all"
+                  placeholder="Nhập tên việc..."
                 />
               </div>
-
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Color Tag</label>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Chọn màu</label>
                 <div className="flex flex-wrap gap-3">
                   {COLORS.map((c) => (
                     <button
                       key={c.code}
                       onClick={() => setEditData({ ...editData, color: c.code })}
-                      className={`w-10 h-10 rounded-xl shadow-sm flex items-center justify-center transition-all duration-200 ${editData.color === c.code ? 'ring-2 ring-offset-2 ring-blue-400 scale-110 shadow-md' : 'hover:scale-105'}`}
+                      className={`w-9 h-9 rounded-xl shadow-sm flex items-center justify-center transition-all ${editData.color === c.code ? 'ring-2 ring-offset-2 ring-slate-300 scale-110 shadow-md' : 'hover:scale-105'}`}
                       style={{ backgroundColor: c.code }}
                     >
-                      {editData.color === c.code && <Check size={20} className="text-white drop-shadow-md" strokeWidth={3} />}
+                      {editData.color === c.code && <Check size={18} className="text-white" strokeWidth={3} />}
                     </button>
                   ))}
                 </div>
               </div>
             </div>
-
-            <div className="p-5 bg-slate-50/50 border-t border-white/50 flex justify-between items-center">
+            <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
               {editData.id ? (
-                <button onClick={handleDeleteInModal} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2.5 rounded-xl transition-all flex items-center gap-2 font-medium text-sm">
-                  <Trash2 size={18} /> Delete
-                </button>
+                <button onClick={handleDeleteInModal} className="text-rose-400 hover:text-rose-600 hover:bg-rose-50 p-2.5 rounded-xl transition-all"><Trash2 size={20} /></button>
               ) : <div></div>}
-              <button onClick={handleSave} className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
-                <Save size={18} /> Save Changes
+              <button onClick={handleSave} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-slate-900/20 transition-all transform active:scale-95">
+                <Save size={18} /> Lưu lại
               </button>
             </div>
           </div>

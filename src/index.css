@@ -1,79 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-body: 'Inter', sans-serif;
-  --font-display: 'Outfit', sans-serif;
-
-  --color-glass-bg: rgba(255, 255, 255, 0.65);
-  --color-glass-border: rgba(255, 255, 255, 0.5);
-  --color-glass-shadow: rgba(0, 0, 0, 0.05);
-
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-900: #0c4a6e;
-}
-
 body {
-  font-family: var(--font-body);
-  /* Orange Theme Background */
-  background: radial-gradient(circle at 10% 20%, #fff7ed 0%, #ffedd5 40%, #fed7aa 90%);
-  background-attachment: fixed;
-  color: #1e293b;
-  /* Slate 800 */
-  min-height: 100vh;
-  margin: 0;
-  overflow-x: hidden;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-display);
-}
-
-@layer components {
-
-  /* Enhanced Glassmorphism Effect -> Solid Card Effect */
-  .glass-panel {
-    @apply bg-white/90 backdrop-blur-xl border-[3px] border-white shadow-2xl shadow-orange-900/5 rounded-3xl transition-all duration-300;
-    box-shadow:
-      0 10px 40px -10px rgba(255, 148, 100, 0.3),
-      /* Soft orange glow shadow */
-      0 0 0 1px rgba(255, 255, 255, 0.5);
-    /* Inner highlight */
-  }
-
-  .glass-panel:hover {
-    @apply bg-white border-white;
-    transform: translateY(-4px);
-    box-shadow:
-      0 20px 40px -5px rgba(255, 130, 80, 0.25),
-      0 10px 20px -5px rgba(0, 0, 0, 0.05);
-  }
-
-  .glass-button {
-    @apply px-4 py-2 rounded-xl font-bold transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 shadow-sm;
-  }
-
-  .glass-input {
-    @apply bg-orange-50/50 border-2 border-orange-100 rounded-2xl px-4 py-3 focus:ring-4 focus:ring-orange-200 focus:border-orange-300 focus:outline-none transition-all placeholder:text-orange-300 font-bold text-slate-700 shadow-inner;
-  }
-
-  .neo-shadow {
-    box-shadow:
-      0 4px 6px -1px rgba(0, 0, 0, 0.05),
-      0 2px 4px -1px rgba(0, 0, 0, 0.03),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  }
+  background-color: #f3f4f6;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 /* Custom Scrollbar */
@@ -87,10 +18,20 @@ h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.glass-panel {
+  /* Tăng độ mờ nền trắng lên 0.85 để nổi bật hơn trên nền màu */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  /* Tăng shadow để tách biệt */
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
 }
