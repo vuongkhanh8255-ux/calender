@@ -197,6 +197,22 @@ function App() {
     }
   }
 
+  const handleCategoryReorder = async (activeId, overId) => {
+    const oldIndex = categories.findIndex(c => c.id === activeId);
+    const newIndex = categories.findIndex(c => c.id === overId);
+
+    if (oldIndex !== newIndex) {
+      const newCategories = arrayMove(categories, oldIndex, newIndex);
+      setCategories(newCategories);
+
+      // Update positions in DB
+      const updates = newCategories.map((cat, index) => ({ id: cat.id, position: index }));
+      for (const update of updates) {
+        await supabase.from('project_categories').update({ position: update.position }).eq('id', update.id);
+      }
+    }
+  };
+
   const addTimelineTask = async (data) => {
     const { id, ...taskData } = data; // Loại bỏ id
     const newTask = {
@@ -287,6 +303,7 @@ function App() {
           onAddTask={addTimelineTask}
           onUpdateTask={updateTimelineTask}
           onDeleteTask={deleteTimelineTask}
+          onReorderCategory={handleCategoryReorder}
         />
 
         {/* GIAO DIỆN CHÍNH - Tăng chiều cao lên 700px */}
@@ -321,7 +338,28 @@ function App() {
             </div>
           </div>
           <div className="p-4 bg-white/20 flex-1">
-            {viewMode === 'calendar' ? <CalendarPro tasks={tasks} onAdd={addTask} onUpdate={updateTask} onDelete={deleteTask} onReorder={handleTaskReorder} /> : <TaskTable tasks={tasks} />}
+            <div className="p-4 bg-white/20 flex-1">
+              {viewMode === 'calendar' ? (
+                <CalendarPro
+                  tasks={[
+                    ...tasks,
+                    ...timelineTasks.map(t => ({
+                      ...t,
+                      id: `timeline-${t.id}`,
+                      start_time: t.task_date, // Timeline tasks only have date
+                      category: categories.find(c => c.id === t.category_id)?.title || 'Timeline',
+                      isTimeline: true
+                    }))
+                  ]}
+                  onAdd={addTask}
+                  onUpdate={updateTask}
+                  onDelete={deleteTask}
+                  onReorder={handleTaskReorder}
+                />
+              ) : (
+                <TaskTable tasks={tasks} />
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import moment from 'moment';
-import { ChevronLeft, ChevronRight, Plus, Edit2, Trash2, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Edit2, Trash2, Calendar, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const COLORS = [
     { code: '#ea580c', name: 'Cam' },
@@ -14,6 +17,106 @@ const COLORS = [
     { code: '#10b981', name: 'Emerald' },
 ];
 
+const SortableCategoryRow = ({ category, weekDays, getTasksForCell, handleCellClick, handleTaskClick, handleEditCategory, onDeleteCategory }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: category.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+        zIndex: isDragging ? 100 : 1,
+        position: 'relative'
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} className="grid grid-cols-8 gap-2 mb-2">
+            {/* Category Name Cell (Drag Handle) */}
+            <div
+                className="p-2 rounded-xl flex flex-col items-center justify-center group hover:shadow-xl transition-all shadow-md relative overflow-hidden text-center cursor-move"
+                style={{ backgroundColor: category.color }}
+                {...attributes}
+                {...listeners}
+            >
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
+
+                {/* Drag Handle Indicator */}
+                <div className="absolute left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-50 text-white">
+                    <GripVertical size={16} />
+                </div>
+
+                <div className="relative z-10 w-full flex items-center justify-center h-full">
+                    <span
+                        className="font-black text-lg md:text-xl text-white break-words leading-tight uppercase tracking-wide drop-shadow-md px-1 select-none"
+                        title={category.title}
+                    >
+                        {category.title}
+                    </span>
+                </div>
+
+                {/* Edit/Delete Buttons */}
+                <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20" onPointerDown={(e) => e.stopPropagation()}>
+                    <button
+                        onClick={(e) => handleEditCategory(category, e)}
+                        className="p-1 hover:bg-white/20 text-white/80 hover:text-white rounded-md transition-all"
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`Xóa đầu mục "${category.title}"? Tất cả task bên dưới sẽ bị xóa theo.`)) {
+                                onDeleteCategory(category.id);
+                            }
+                        }}
+                        className="p-1 hover:bg-white/20 text-white/80 hover:text-white rounded-md transition-all"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Task Cells (Not draggable) */}
+            {weekDays.map((day, i) => {
+                const cellTasks = getTasksForCell(category.id, day);
+                const isToday = day.isSame(moment(), 'day');
+                return (
+                    <div
+                        key={i}
+                        onClick={() => handleCellClick(category.id, day)}
+                        className={`p-2 rounded-xl min-h-[150px] cursor-pointer hover:shadow-lg transition-all border-2 ${isToday
+                            ? 'bg-gradient-to-br from-amber-100 to-yellow-100 border-amber-400 shadow-md'
+                            : 'bg-white/60 border-amber-200/40 hover:bg-gradient-to-br hover:from-white hover:to-amber-50'
+                            }`}
+                    >
+                        <div className="flex flex-wrap gap-1">
+                            {cellTasks.map((task) => {
+                                const isDone = task.status === 'done';
+                                return (
+                                    <div
+                                        key={task.id}
+                                        onClick={(e) => handleTaskClick(task, e)}
+                                        className={`px-2 py-1 rounded-lg text-xs font-semibold text-white shadow-sm hover:scale-105 transition-transform cursor-pointer break-words ${isDone ? 'line-through opacity-60' : ''}`}
+                                        style={{ backgroundColor: isDone ? '#64748b' : task.color }}
+                                        title={task.title}
+                                    >
+                                        {isDone && <span className="mr-1">✓</span>}
+                                        {task.title}
+                                    </div>
+                                );
+                            })}
+                            {cellTasks.length === 0 && (
+                                <div className="text-xs text-slate-300 italic w-full text-center py-2 select-none">
+                                    + Thêm
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
 const TimelineBoard = ({
     categories,
     tasks,
@@ -23,13 +126,30 @@ const TimelineBoard = ({
     onDeleteCategory,
     onAddTask,
     onUpdateTask,
-    onDeleteTask
+    onDeleteTask,
+    onReorderCategory
 }) => {
     const [currentWeekStart, setCurrentWeekStart] = useState(moment().startOf('week'));
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
     const [taskModalOpen, setTaskModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
     const [editingTask, setEditingTask] = useState(null);
+
+    // Draggable sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        })
+    );
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+        if (active.id !== over.id) {
+            onReorderCategory(active.id, over.id);
+        }
+    };
 
     // Generate 7 days starting from currentWeekStart
     const weekDays = Array.from({ length: 7 }, (_, i) =>
@@ -150,89 +270,29 @@ const TimelineBoard = ({
                         })}
                     </div>
 
-                    {/* Category Rows */}
+                    {/* Category Rows with Drag & Drop */}
                     {categories.length === 0 ? (
                         <div className="text-center py-12 text-slate-400">
                             <Calendar size={48} className="mx-auto mb-3 opacity-30" />
                             <p className="font-semibold">Chưa có đầu mục nào. Click "Thêm đầu mục" để bắt đầu!</p>
                         </div>
                     ) : (
-                        categories.map((category) => (
-                            <div key={category.id} className="grid grid-cols-8 gap-2 mb-2">
-                                {/* Category Name Cell */}
-                                <div
-                                    className="p-3 rounded-xl flex items-center justify-between group hover:shadow-lg transition-all border-2 border-amber-300/40 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100"
-                                    style={{ borderLeftWidth: '6px', borderLeftColor: category.color }}
-                                >
-                                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                                        <div
-                                            className="w-3 h-3 rounded-full shrink-0"
-                                            style={{ backgroundColor: category.color }}
-                                        />
-                                        <span
-                                            className="font-bold text-sm text-slate-800 break-words leading-tight"
-                                            title={category.title}
-                                        >
-                                            {category.title}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                            onClick={(e) => handleEditCategory(category, e)}
-                                            className="p-1 hover:bg-white/60 rounded transition-all"
-                                        >
-                                            <Edit2 size={14} className="text-slate-500" />
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (confirm(`Xóa đầu mục "${category.title}"? Tất cả task bên dưới sẽ bị xóa theo.`)) {
-                                                    onDeleteCategory(category.id);
-                                                }
-                                            }}
-                                            className="p-1 hover:bg-red-50 rounded transition-all"
-                                        >
-                                            <Trash2 size={14} className="text-red-500" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Task Cells */}
-                                {weekDays.map((day, i) => {
-                                    const cellTasks = getTasksForCell(category.id, day);
-                                    const isToday = day.isSame(moment(), 'day');
-                                    return (
-                                        <div
-                                            key={i}
-                                            onClick={() => handleCellClick(category.id, day)}
-                                            className={`p-2 rounded-xl min-h-[100px] cursor-pointer hover:shadow-lg transition-all border-2 ${isToday
-                                                ? 'bg-gradient-to-br from-amber-100 to-yellow-100 border-amber-400 shadow-md'
-                                                : 'bg-white/60 border-amber-200/40 hover:bg-gradient-to-br hover:from-white hover:to-amber-50'
-                                                }`}
-                                        >
-                                            <div className="flex flex-wrap gap-1">
-                                                {cellTasks.map((task) => (
-                                                    <div
-                                                        key={task.id}
-                                                        onClick={(e) => handleTaskClick(task, e)}
-                                                        className="px-2 py-1 rounded-lg text-xs font-semibold text-white shadow-sm hover:scale-105 transition-transform cursor-pointer break-words"
-                                                        style={{ backgroundColor: task.color }}
-                                                        title={task.title}
-                                                    >
-                                                        {task.title}
-                                                    </div>
-                                                ))}
-                                                {cellTasks.length === 0 && (
-                                                    <div className="text-xs text-slate-300 italic w-full text-center py-2">
-                                                        + Thêm
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ))
+                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                            <SortableContext items={categories.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                                {categories.map((category) => (
+                                    <SortableCategoryRow
+                                        key={category.id}
+                                        category={category}
+                                        weekDays={weekDays}
+                                        getTasksForCell={getTasksForCell}
+                                        handleCellClick={handleCellClick}
+                                        handleTaskClick={handleTaskClick}
+                                        handleEditCategory={handleEditCategory}
+                                        onDeleteCategory={onDeleteCategory}
+                                    />
+                                ))}
+                            </SortableContext>
+                        </DndContext>
                     )}
                 </div>
             </div>
