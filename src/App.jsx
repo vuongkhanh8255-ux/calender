@@ -218,6 +218,8 @@ function App() {
     const newTask = {
       ...taskData,
       owner: currentUser,
+      status: taskData.status || 'todo',
+      position: taskData.position || 0,
       created_at: new Date().toISOString()
     };
     const { error } = await supabase.from('timeline_tasks').insert([newTask]);
@@ -236,8 +238,8 @@ function App() {
     const { error } = await supabase.from('timeline_tasks').update(data).eq('id', id);
     if (error) {
       console.error(error);
-      if (error.message.includes('status') || error.message.includes('schema')) {
-        alert("⚠️ Lỗi: Database chưa có cột 'status'. Anh vui lòng chạy lệnh SQL em gửi để cập nhật tính năng tick checkbox nhé!");
+      if (error.message.includes('status') || error.message.includes('position') || error.message.includes('schema')) {
+        alert("⚠️ Lỗi: Database chưa có cột 'status' hoặc 'position'. Anh vui lòng chạy lệnh SQL em gửi để cập nhật nhé!");
       } else {
         alert("❌ Lỗi: " + error.message);
       }

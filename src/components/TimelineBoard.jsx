@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import moment from 'moment';
-import { ChevronLeft, ChevronRight, Plus, Edit2, Trash2, Calendar, GripVertical } from 'lucide-react';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
+import { ChevronLeft, ChevronRight, Plus, Edit2, Trash2, Calendar, GripVertical, CheckCircle2, Circle } from 'lucide-react';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay, pointerWithin, useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -17,7 +17,93 @@ const COLORS = [
     { code: '#10b981', name: 'Emerald' },
 ];
 
-const SortableCategoryRow = ({ category, weekDays, getTasksForCell, handleCellClick, handleTaskClick, handleEditCategory, onDeleteCategory }) => {
+// Sortable Task Card Component
+const SortableTaskCard = ({ task, onTaskClick, onToggleComplete }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: task.id,
+        data: { task }
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 1000 : 1,
+    };
+
+    const isDone = task.status === 'done';
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            className={`group relative px-2 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm transition-transform cursor-grab active:cursor-grabbing max-w-full inline-block ${isDone ? 'line-through opacity-70' : ''}`}
+        >
+            <div
+                className="absolute inset-0 rounded-lg pointer-events-none"
+                style={{ backgroundColor: isDone ? '#64748b' : task.color }}
+            />
+
+            {/* Quick Complete Checkbox */}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onToggleComplete(task);
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-full p-0.5 shadow-md hover:scale-110 z-20 pointer-events-auto"
+                title={isDone ? "Đánh dấu chưa xong" : "Đánh dấu hoàn thành"}
+            >
+                {isDone ? (
+                    <CheckCircle2 size={14} className="text-green-600" />
+                ) : (
+                    <Circle size={14} className="text-slate-400" />
+                )}
+            </button>
+
+            {/* Task Content - Double click to edit */}
+            <div
+                onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    onTaskClick(task, e);
+                }}
+                className="relative z-10 pointer-events-none select-none whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]"
+            >
+                {isDone && <span className="mr-1">✓</span>}
+                {task.title}
+            </div>
+        </div>
+    );
+};
+
+// Droppable Cell Component
+const DroppableCell = ({ categoryId, date, children, isToday }) => {
+    const cellId = `cell-${categoryId}-${date}`;
+    const { setNodeRef, isOver } = useDroppable({
+        id: cellId,
+        data: { categoryId, date }
+    });
+
+    return (
+        <div
+            ref={setNodeRef}
+            className={`p-2 rounded-xl min-h-[150px] hover:shadow-lg transition-all border-2 ${isOver
+                ? 'border-blue-500 bg-blue-50/50'
+                : isToday
+                    ? 'bg-gradient-to-br from-amber-100 to-yellow-100 border-amber-400 shadow-md'
+                    : 'bg-white/60 border-amber-200/40 hover:bg-gradient-to-br hover:from-white hover:to-amber-50'
+                }`}
+        >
+            {children}
+        </div>
+    );
+};
+
+
+const SortableCategoryRow = ({ category, weekDays, getTasksForCell, handleCellClick, handleTaskClick, handleEditCategory, onDeleteCategory, onToggleComplete }) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: category.id });
 
     const style = {
@@ -75,42 +161,38 @@ const SortableCategoryRow = ({ category, weekDays, getTasksForCell, handleCellCl
                 </div>
             </div>
 
-            {/* Task Cells (Not draggable) */}
+            {/* Task Cells (Now draggable across cells) */}
             {weekDays.map((day, i) => {
                 const cellTasks = getTasksForCell(category.id, day);
                 const isToday = day.isSame(moment(), 'day');
+                const dateStr = day.format('YYYY-MM-DD');
+
                 return (
-                    <div
+                    <DroppableCell
                         key={i}
-                        onClick={() => handleCellClick(category.id, day)}
-                        className={`p-2 rounded-xl min-h-[150px] cursor-pointer hover:shadow-lg transition-all border-2 ${isToday
-                            ? 'bg-gradient-to-br from-amber-100 to-yellow-100 border-amber-400 shadow-md'
-                            : 'bg-white/60 border-amber-200/40 hover:bg-gradient-to-br hover:from-white hover:to-amber-50'
-                            }`}
+                        categoryId={category.id}
+                        date={dateStr}
+                        isToday={isToday}
                     >
-                        <div className="flex flex-wrap gap-1">
-                            {cellTasks.map((task) => {
-                                const isDone = task.status === 'done';
-                                return (
-                                    <div
-                                        key={task.id}
-                                        onClick={(e) => handleTaskClick(task, e)}
-                                        className={`px-2 py-1 rounded-lg text-xs font-semibold text-white shadow-sm hover:scale-105 transition-transform cursor-pointer break-words ${isDone ? 'line-through opacity-60' : ''}`}
-                                        style={{ backgroundColor: isDone ? '#64748b' : task.color }}
-                                        title={task.title}
-                                    >
-                                        {isDone && <span className="mr-1">✓</span>}
-                                        {task.title}
-                                    </div>
-                                );
-                            })}
+                        <div
+                            onClick={() => handleCellClick(category.id, day)}
+                            className="flex flex-wrap gap-1 cursor-pointer min-h-[120px]"
+                        >
+                            {cellTasks.map((task) => (
+                                <SortableTaskCard
+                                    key={task.id}
+                                    task={task}
+                                    onTaskClick={handleTaskClick}
+                                    onToggleComplete={onToggleComplete}
+                                />
+                            ))}
                             {cellTasks.length === 0 && (
                                 <div className="text-xs text-slate-300 italic w-full text-center py-2 select-none">
                                     + Thêm
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </DroppableCell>
                 );
             })}
         </div>
@@ -139,15 +221,86 @@ const TimelineBoard = ({
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8,
+                distance: 3, // Smaller distance for more responsive drag
             },
         })
     );
 
     const handleDragEnd = (event) => {
         const { active, over } = event;
-        if (active.id !== over.id) {
-            onReorderCategory(active.id, over.id);
+        if (!over) return;
+
+        // Check if we're dragging a task
+        const isDraggingTask = tasks.some(t => t.id === active.id);
+
+        if (!isDraggingTask) {
+            // Handle category reordering
+            if (active.id !== over.id) {
+                onReorderCategory(active.id, over.id);
+            }
+        } else {
+            // Handle task drop
+            const activeTask = tasks.find(t => t.id === active.id);
+            if (!activeTask) return;
+
+            // Check if dropped over a droppable cell
+            const overData = over.data?.current;
+            let newCategoryId, newDate;
+
+            if (over.id.toString().startsWith('cell-')) {
+                // Dropped into a droppable cell zone
+                newCategoryId = overData.categoryId;
+                newDate = overData.date;
+
+                // Move to new cell
+                if (String(activeTask.category_id) !== String(newCategoryId) || activeTask.task_date !== newDate) {
+                    onUpdateTask(active.id, {
+                        category_id: newCategoryId,
+                        task_date: newDate,
+                        position: 0
+                    });
+                }
+            } else {
+                // Dropped over another task
+                const overTask = tasks.find(t => t.id === over.id);
+
+                if (overTask) {
+                    newCategoryId = overTask.category_id;
+                    newDate = overTask.task_date;
+
+                    // Check if category or date changed
+                    if (String(activeTask.category_id) !== String(newCategoryId) || activeTask.task_date !== newDate) {
+                        // Cross-cell drop
+                        onUpdateTask(active.id, {
+                            category_id: newCategoryId,
+                            task_date: newDate,
+                            position: 0
+                        });
+                    } else {
+                        // Same cell - reorder
+                        const cellTasks = tasks.filter(t =>
+                            String(t.category_id) === String(activeTask.category_id) &&
+                            t.task_date === activeTask.task_date
+                        ).sort((a, b) => (a.position || 0) - (b.position || 0));
+
+                        const oldIndex = cellTasks.findIndex(t => t.id === active.id);
+                        const newIndex = cellTasks.findIndex(t => t.id === over.id);
+
+                        if (oldIndex !== -1 && newIndex !== -1) {
+                            const reorderedTasks = [...cellTasks];
+                            const [movedTask] = reorderedTasks.splice(oldIndex, 1);
+                            reorderedTasks.splice(newIndex, 0, movedTask);
+
+                            // Update positions
+                            reorderedTasks.forEach((task, index) => {
+                                if (task.position !== index) {
+                                    onUpdateTask(task.id, { position: index });
+                                }
+                            });
+                        }
+                    }
+                }
+            }
         }
     };
 
@@ -200,7 +353,14 @@ const TimelineBoard = ({
         return tasks.filter(t =>
             t.category_id === categoryId &&
             moment(t.task_date).isSame(date, 'day')
-        );
+        ).sort((a, b) => (a.position || 0) - (b.position || 0));
+    };
+
+
+    // Handle quick complete toggle
+    const handleToggleComplete = (task) => {
+        const newStatus = task.status === 'done' ? 'todo' : 'done';
+        onUpdateTask(task.id, { status: newStatus });
     };
 
     return (
@@ -277,8 +437,8 @@ const TimelineBoard = ({
                             <p className="font-semibold">Chưa có đầu mục nào. Click "Thêm đầu mục" để bắt đầu!</p>
                         </div>
                     ) : (
-                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                            <SortableContext items={categories.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                        <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
+                            <SortableContext id="categories" items={[...categories.map(c => c.id), ...tasks.map(t => t.id)]} strategy={verticalListSortingStrategy}>
                                 {categories.map((category) => (
                                     <SortableCategoryRow
                                         key={category.id}
@@ -289,6 +449,7 @@ const TimelineBoard = ({
                                         handleTaskClick={handleTaskClick}
                                         handleEditCategory={handleEditCategory}
                                         onDeleteCategory={onDeleteCategory}
+                                        onToggleComplete={handleToggleComplete}
                                     />
                                 ))}
                             </SortableContext>
