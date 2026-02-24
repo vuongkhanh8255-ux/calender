@@ -256,13 +256,13 @@ function App() {
   const scheduleTasks = tasks.filter(t => t.category === 'Schedule');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-blue-400 to-yellow-400 transition-colors font-sans text-slate-800 pb-20 relative overflow-x-hidden selection:bg-orange-200 selection:text-orange-900 text-base md:text-lg">
+    <div className="min-h-screen bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400 transition-colors font-sans text-slate-800 pb-20 relative overflow-x-hidden selection:bg-orange-200 selection:text-orange-900 text-base md:text-lg">
       {/* Decorative Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Blue/Yellow Blobs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-400/30 rounded-full blur-[130px] mix-blend-multiply animate-blob"></div>
+        {/* Orange/Yellow/Red Blobs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-500/30 rounded-full blur-[130px] mix-blend-multiply animate-blob"></div>
         <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-yellow-400/30 rounded-full blur-[130px] mix-blend-multiply animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] bg-blue-300/30 rounded-full blur-[130px] mix-blend-multiply animate-blob animation-delay-4000"></div>
+        <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] bg-orange-400/30 rounded-full blur-[130px] mix-blend-multiply animate-blob animation-delay-4000"></div>
       </div>
 
       {/* {showEffect && <TetFallingEffect />} */}
@@ -275,10 +275,10 @@ function App() {
               <Flower className="text-orange-600 animate-spin-slow" size={28} />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2">
                 QUỐC KHÁNH <Heart className="text-red-500 fill-red-500 animate-pulse" size={24} />
               </h1>
-              <p className="text-slate-600 text-sm font-bold">Chúc mừng năm mới - Vạn sự như ý!</p>
+              <p className="text-white/90 text-sm font-bold">Chúc mừng năm mới - Vạn sự như ý!</p>
             </div>
           </div>
 
