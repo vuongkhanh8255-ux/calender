@@ -28,7 +28,7 @@ const ScratchPad = ({ currentUser }) => { // <--- Nhận thêm biến currentUse
         <div className="bg-yellow-100/80 text-yellow-700 p-2.5 rounded-xl shadow-sm">
           <PenTool size={22} />
         </div>
-        <h3 className="text-slate-800 font-extrabold text-xs tracking-wide uppercase">
+        <h3 className="text-orange-600 font-extrabold text-xs tracking-wide uppercase">
           GHI CHÚ: {currentUser.toUpperCase()}
         </h3>
       </div>

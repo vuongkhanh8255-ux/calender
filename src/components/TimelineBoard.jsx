@@ -24,14 +24,16 @@ const SortableTaskCard = ({ task, onTaskClick, onToggleComplete }) => {
         data: { task }
     });
 
+    const isDone = task.status === 'done';
+
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
         zIndex: isDragging ? 1000 : 1,
+        borderColor: isDone ? '#94a3b8' : task.color,
+        color: isDone ? '#64748b' : task.color,
     };
-
-    const isDone = task.status === 'done';
 
     return (
         <div
@@ -39,11 +41,10 @@ const SortableTaskCard = ({ task, onTaskClick, onToggleComplete }) => {
             style={style}
             {...attributes}
             {...listeners}
-            className={`group relative px-2 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm transition-transform cursor-grab active:cursor-grabbing max-w-full inline-block ${isDone ? 'line-through opacity-70' : ''}`}
+            className={`group relative px-3 py-2 rounded-lg text-xs font-black bg-white shadow-sm border hover:shadow-md hover:-translate-y-0.5 transition-all cursor-grab active:cursor-grabbing max-w-full inline-block ${isDone ? 'line-through opacity-70' : ''}`}
         >
             <div
-                className="absolute inset-0 rounded-lg pointer-events-none"
-                style={{ backgroundColor: isDone ? '#64748b' : task.color }}
+                className="absolute inset-0 rounded-lg pointer-events-none bg-white"
             />
 
             {/* Quick Complete Checkbox */}
@@ -70,7 +71,7 @@ const SortableTaskCard = ({ task, onTaskClick, onToggleComplete }) => {
                     e.stopPropagation();
                     onTaskClick(task, e);
                 }}
-                className="relative z-10 pointer-events-none select-none whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]"
+                className="relative z-10 pointer-events-none select-none whitespace-nowrap overflow-hidden text-ellipsis max-w-[170px]"
             >
                 {isDone && <span className="mr-1">✓</span>}
                 {task.title}
@@ -90,11 +91,11 @@ const DroppableCell = ({ categoryId, date, children, isToday }) => {
     return (
         <div
             ref={setNodeRef}
-            className={`p-2 rounded-xl min-h-[150px] hover:shadow-lg transition-all border-2 ${isOver
-                ? 'border-blue-500 bg-blue-50/50'
+            className={`p-3 rounded-xl min-h-[168px] transition-all border ${isOver
+                ? 'border-orange-500 bg-orange-50'
                 : isToday
-                    ? 'bg-gradient-to-br from-amber-100 to-yellow-100 border-amber-400 shadow-md'
-                    : 'bg-white/60 border-amber-200/40 hover:bg-gradient-to-br hover:from-white hover:to-amber-50'
+                    ? 'bg-orange-50/70 border-orange-300 shadow-[inset_0_0_0_1px_rgba(249,115,22,0.12)]'
+                    : 'bg-slate-50/70 border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-sm'
                 }`}
         >
             {children}
@@ -115,24 +116,28 @@ const SortableCategoryRow = ({ category, weekDays, getTasksForCell, handleCellCl
     };
 
     return (
-        <div ref={setNodeRef} style={style} className="grid grid-cols-8 gap-2 mb-2">
+        <div ref={setNodeRef} style={style} className="grid grid-cols-[210px_repeat(7,minmax(165px,1fr))] gap-2.5 mb-2.5">
             {/* Category Name Cell (Drag Handle) */}
             <div
-                className="p-2 rounded-xl flex flex-col items-center justify-center group hover:shadow-xl transition-all shadow-md relative overflow-hidden text-center cursor-move"
-                style={{ backgroundColor: category.color }}
+                className="min-h-[168px] p-4 rounded-xl flex flex-col items-center justify-center group hover:shadow-md transition-all border border-orange-200 bg-orange-50/70 relative overflow-hidden cursor-move text-center"
+                style={{ borderTop: `3px solid ${category.color}` }}
                 {...attributes}
                 {...listeners}
             >
-                <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
+                <div className="absolute inset-0 bg-orange-50/70 group-hover:bg-orange-50 transition-colors"></div>
 
                 {/* Drag Handle Indicator */}
-                <div className="absolute left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-50 text-white">
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-50 text-slate-400">
                     <GripVertical size={16} />
                 </div>
 
-                <div className="relative z-10 w-full flex items-center justify-center h-full">
+                <div className="relative z-10 w-full flex flex-col items-center justify-center h-full gap-3">
+                    <div
+                        className="w-8 h-1.5 rounded-full shrink-0"
+                        style={{ backgroundColor: category.color }}
+                    />
                     <span
-                        className="font-black text-lg md:text-xl text-white break-words leading-tight uppercase tracking-wide drop-shadow-md px-1 select-none"
+                        className="font-black text-base md:text-lg text-orange-600 break-words leading-tight uppercase tracking-wide px-1 select-none"
                         title={category.title}
                     >
                         {category.title}
@@ -140,10 +145,10 @@ const SortableCategoryRow = ({ category, weekDays, getTasksForCell, handleCellCl
                 </div>
 
                 {/* Edit/Delete Buttons */}
-                <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20" onPointerDown={(e) => e.stopPropagation()}>
+                <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20" onPointerDown={(e) => e.stopPropagation()}>
                     <button
                         onClick={(e) => handleEditCategory(category, e)}
-                        className="p-1 hover:bg-white/20 text-white/80 hover:text-white rounded-md transition-all"
+                        className="p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-lg transition-all"
                     >
                         <Edit2 size={16} />
                     </button>
@@ -154,7 +159,7 @@ const SortableCategoryRow = ({ category, weekDays, getTasksForCell, handleCellCl
                                 onDeleteCategory(category.id);
                             }
                         }}
-                        className="p-1 hover:bg-white/20 text-white/80 hover:text-white rounded-md transition-all"
+                        className="p-1.5 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-lg transition-all"
                     >
                         <Trash2 size={16} />
                     </button>
@@ -176,7 +181,7 @@ const SortableCategoryRow = ({ category, weekDays, getTasksForCell, handleCellCl
                     >
                         <div
                             onClick={() => handleCellClick(category.id, day)}
-                            className="flex flex-wrap gap-1 cursor-pointer min-h-[120px]"
+                            className="flex flex-col gap-2 cursor-pointer min-h-[140px]"
                         >
                             {cellTasks.map((task) => (
                                 <SortableTaskCard
@@ -187,7 +192,7 @@ const SortableCategoryRow = ({ category, weekDays, getTasksForCell, handleCellCl
                                 />
                             ))}
                             {cellTasks.length === 0 && (
-                                <div className="text-xs text-slate-300 italic w-full text-center py-2 select-none">
+                                <div className="text-xs text-slate-300 italic w-full text-center py-8 select-none">
                                     + Thêm
                                 </div>
                             )}
@@ -364,43 +369,46 @@ const TimelineBoard = ({
     };
 
     return (
-        <div className="glass-panel rounded-3xl p-3 md:p-6 mb-8 border-2 border-amber-200/60 shadow-2xl bg-gradient-to-br from-amber-50/80 to-yellow-50/80">
+        <div className="rounded-2xl p-4 md:p-6 mb-8 border border-slate-200/80 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.45)] bg-white/95 backdrop-blur-xl">
             {/* Header */}
-            <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-3 bg-gradient-to-br from-amber-500 to-yellow-600 text-white rounded-xl shadow-lg">
-                        <Calendar size={24} className="stroke-[2.5px]" />
+                    <div className="p-3 bg-orange-500 text-white rounded-xl shadow-sm">
+                        <Calendar size={22} className="stroke-[2.5px]" />
                     </div>
-                    <h2 className="text-xl md:text-2xl font-black bg-gradient-to-r from-amber-800 to-yellow-700 bg-clip-text text-transparent tracking-tight">TIMELINE BOARD</h2>
+                    <div>
+                        <h2 className="text-xl md:text-2xl font-black text-orange-600 tracking-tight">TIMELINE BOARD</h2>
+                        <p className="text-xs md:text-sm font-semibold text-slate-400">Weekly focus planner</p>
+                    </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 w-full md:w-auto">
+                <div className="flex flex-wrap items-center justify-start md:justify-center gap-2 md:gap-3 w-full md:w-auto">
                     <button
                         onClick={handleToday}
-                        className="px-3 md:px-4 py-2 bg-white/80 hover:bg-white text-amber-800 rounded-xl font-bold text-xs md:text-sm transition-all shadow-md border-2 border-amber-200/60 hover:border-amber-300"
+                        className="px-3 md:px-4 py-2 bg-orange-50 hover:bg-white text-orange-700 rounded-lg font-bold text-xs md:text-sm transition-all shadow-sm border border-orange-200 hover:border-orange-300"
                     >
                         Hôm nay
                     </button>
-                    <div className="flex items-center bg-white/80 rounded-xl border-2 border-amber-200/60 shadow-md">
+                    <div className="flex items-center bg-slate-50 rounded-lg border border-slate-200 shadow-sm">
                         <button
                             onClick={handlePrevWeek}
-                            className="p-2 hover:bg-amber-50 rounded-l-xl transition-all"
+                            className="p-2 hover:bg-white rounded-l-lg transition-all"
                         >
-                            <ChevronLeft size={20} className="text-amber-800" />
+                            <ChevronLeft size={20} className="text-orange-600" />
                         </button>
-                        <div className="px-2 md:px-4 py-2 text-xs md:text-sm font-bold text-amber-800 border-x-2 border-amber-100 whitespace-nowrap">
+                        <div className="px-3 md:px-5 py-2 text-xs md:text-sm font-bold text-orange-700 border-x border-slate-200 whitespace-nowrap">
                             {currentWeekStart.format('DD/MM')} - {moment(currentWeekStart).add(6, 'days').format('DD/MM/YYYY')}
                         </div>
                         <button
                             onClick={handleNextWeek}
-                            className="p-2 hover:bg-amber-50 rounded-r-xl transition-all"
+                            className="p-2 hover:bg-white rounded-r-lg transition-all"
                         >
-                            <ChevronRight size={20} className="text-amber-800" />
+                            <ChevronRight size={20} className="text-orange-600" />
                         </button>
                     </div>
                     <button
                         onClick={handleAddCategory}
-                        className="px-3 md:px-4 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white rounded-xl font-bold text-xs md:text-sm transition-all shadow-lg flex items-center gap-2 border border-amber-700/30"
+                        className="px-3 md:px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-xs md:text-sm transition-all shadow-sm flex items-center gap-2 border border-orange-500"
                     >
                         <Plus size={18} /> <span className="hidden sm:inline">Thêm đầu mục</span><span className="inline sm:hidden">Thêm</span>
                     </button>
@@ -408,23 +416,23 @@ const TimelineBoard = ({
             </div>
 
             {/* Timeline Grid */}
-            <div className="overflow-x-auto">
-                <div className="min-w-[800px]">
+            <div className="overflow-x-auto pb-2">
+                <div className="min-w-[1430px] 2xl:min-w-0">
                     {/* Header Row - Days */}
-                    <div className="grid grid-cols-8 gap-2 mb-2">
-                        <div className="p-3 text-center font-bold text-white text-sm bg-slate-700 rounded-xl border-2 border-slate-600 shadow-md">Đầu mục</div>
+                    <div className="grid grid-cols-[210px_repeat(7,minmax(165px,1fr))] gap-2.5 mb-2.5">
+                        <div className="h-[76px] px-4 flex items-center justify-center text-center font-bold text-orange-600 text-xs uppercase tracking-wide bg-orange-50 rounded-xl border border-orange-200">Đầu mục</div>
                         {weekDays.map((day, i) => {
                             const isToday = day.isSame(moment(), 'day');
                             return (
                                 <div
                                     key={i}
-                                    className={`p-3 rounded-xl text-center font-bold text-sm shadow-md border-2 ${isToday
-                                        ? 'bg-orange-500 text-white ring-2 ring-orange-600 shadow-lg'
-                                        : 'bg-slate-700 text-white border-slate-600'
+                                    className={`h-[76px] rounded-xl text-center font-bold text-sm border flex flex-col items-center justify-center transition-all ${isToday
+                                        ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
+                                        : 'bg-slate-50 text-slate-700 border-slate-200'
                                         }`}
                                 >
-                                    <div className="text-xs uppercase">{day.format('ddd')}</div>
-                                    <div className="text-lg font-black">{day.format('DD')}</div>
+                                    <div className={`text-[11px] uppercase tracking-wide ${isToday ? 'text-white/70' : 'text-slate-400'}`}>{day.format('ddd')}</div>
+                                    <div className="text-xl font-black leading-none mt-1">{day.format('DD')}</div>
                                 </div>
                             );
                         })}
@@ -432,7 +440,7 @@ const TimelineBoard = ({
 
                     {/* Category Rows with Drag & Drop */}
                     {categories.length === 0 ? (
-                        <div className="text-center py-12 text-slate-400">
+                        <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                             <Calendar size={48} className="mx-auto mb-3 opacity-30" />
                             <p className="font-semibold">Chưa có đầu mục nào. Click "Thêm đầu mục" để bắt đầu!</p>
                         </div>

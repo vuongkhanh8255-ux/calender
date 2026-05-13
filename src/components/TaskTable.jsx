@@ -4,7 +4,7 @@ import React from 'react';
 const TaskTable = ({ tasks }) => {
   return (
     <div className="border p-4 rounded shadow bg-white">
-      <h2 className="font-bold mb-4 text-xl">📂 Quản lý tổng (Table View)</h2>
+      <h2 className="font-bold mb-4 text-xl text-orange-600">📂 Quản lý tổng (Table View)</h2>
       <table className="w-full text-left border-collapse">
         <thead className="bg-gray-100">
           <tr>

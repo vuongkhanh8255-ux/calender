@@ -60,7 +60,7 @@ const TodoList = ({ tasks, categories, onToggle, onAdd, onDelete }) => {
           <div className="p-3 bg-orange-100 text-orange-600 rounded-xl shadow-sm">
             <SquareCheckBig size={24} className="stroke-[2.5px]" />
           </div>
-          <h3 className="text-slate-800 font-extrabold text-xl tracking-tight uppercase">TO DO LIST</h3>
+          <h3 className="text-orange-600 font-extrabold text-xl tracking-tight uppercase">TO DO LIST</h3>
         </div>
 
         <div className="flex items-center gap-2">

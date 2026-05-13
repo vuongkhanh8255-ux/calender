@@ -256,39 +256,39 @@ function App() {
   const scheduleTasks = tasks.filter(t => t.category === 'Schedule');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400 transition-colors font-sans text-slate-800 pb-20 relative overflow-x-hidden selection:bg-orange-200 selection:text-orange-900 text-base md:text-lg">
+    <div className="min-h-screen bg-[#f5f1ea] transition-colors font-sans text-slate-800 pb-20 relative overflow-x-hidden selection:bg-orange-200 selection:text-orange-900 text-base md:text-lg">
       {/* Decorative Blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-50">
         {/* Orange/Yellow/Red Blobs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-500/30 rounded-full blur-[130px] mix-blend-multiply animate-blob"></div>
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-yellow-400/30 rounded-full blur-[130px] mix-blend-multiply animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] bg-orange-400/30 rounded-full blur-[130px] mix-blend-multiply animate-blob animation-delay-4000"></div>
+        <div className="absolute top-[-15%] left-[-10%] w-[44%] h-[44%] bg-white rounded-full blur-[140px]"></div>
+        <div className="absolute top-[20%] right-[-12%] w-[42%] h-[42%] bg-orange-100 rounded-full blur-[150px]"></div>
+        <div className="absolute bottom-[-18%] left-[18%] w-[48%] h-[48%] bg-stone-200 rounded-full blur-[150px]"></div>
       </div>
 
       {/* {showEffect && <TetFallingEffect />} */}
 
-      <div className="max-w-[1600px] mx-auto p-4 relative">
+      <div className="max-w-[1880px] mx-auto p-3 md:p-5 relative">
         {/* HEADER */}
-        <header className="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <header className="mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-white/60 backdrop-blur-xl rounded-2xl shadow-sm border border-white/60">
+            <div className="p-3 bg-white/85 backdrop-blur-xl rounded-2xl shadow-sm border border-orange-100">
               <Flower className="text-orange-600 animate-spin-slow" size={28} />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2">
+              <h1 className="text-2xl md:text-3xl font-black text-orange-600 tracking-tight flex items-center gap-2">
                 QUỐC KHÁNH <Heart className="text-red-500 fill-red-500 animate-pulse" size={24} />
               </h1>
-              <p className="text-white/90 text-sm font-bold">Chúc mừng năm mới - Vạn sự như ý!</p>
+              <p className="text-slate-500 text-sm font-bold">Chúc mừng năm mới - Vạn sự như ý!</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-white/40 backdrop-blur-md p-1.5 rounded-2xl border border-white/40 shadow-sm">
+          <div className="flex items-center gap-3 bg-white/75 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/70 shadow-sm">
 
-            <div className="text-sm font-bold text-slate-700 bg-white/60 px-4 py-2 rounded-xl shadow-sm whitespace-nowrap">
+            <div className="text-sm font-bold text-orange-700 bg-orange-50 px-4 py-2 rounded-xl shadow-sm whitespace-nowrap">
               🧧 {new Date().toLocaleDateString('vi-VN')}
             </div>
 
-            <button onClick={() => setShowEffect(!showEffect)} className="p-2.5 bg-white/60 hover:bg-white text-slate-600 rounded-xl transition-all shadow-sm">
+            <button onClick={() => setShowEffect(!showEffect)} className="p-2.5 bg-white/80 hover:bg-white text-orange-600 rounded-xl transition-all shadow-sm">
               {showEffect ? <Zap size={18} className="text-amber-500 fill-amber-500" /> : <ZapOff size={18} />}
             </button>
           </div>
@@ -333,10 +333,10 @@ function App() {
 
         <div className="glass-panel rounded-3xl overflow-hidden flex flex-col min-h-[700px]">
           <div className="px-6 py-4 border-b border-white/50 flex flex-col md:flex-row justify-between items-center bg-white/30 gap-4 md:gap-0">
-            <h2 className="font-bold text-slate-700 text-lg flex items-center gap-2"><LayoutGrid size={20} className="text-indigo-500" /> Lịch trình của <span className='text-blue-600'>{currentUser}</span></h2>
+            <h2 className="font-bold text-orange-600 text-lg flex items-center gap-2"><LayoutGrid size={20} className="text-orange-500" /> Lịch trình của <span className='text-orange-600'>{currentUser}</span></h2>
             <div className="flex bg-slate-100/50 p-1 rounded-xl">
-              <button onClick={() => setViewMode('calendar')} className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${viewMode === 'calendar' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Lịch</button>
-              <button onClick={() => setViewMode('table')} className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${viewMode === 'table' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Bảng</button>
+              <button onClick={() => setViewMode('calendar')} className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${viewMode === 'calendar' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500'}`}>Lịch</button>
+              <button onClick={() => setViewMode('table')} className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${viewMode === 'table' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500'}`}>Bảng</button>
             </div>
           </div>
           <div className="p-4 bg-white/20 flex-1">
